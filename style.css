@@ -1,0 +1,12 @@
+.body {
+    background-image: url("img/pattern.jpg");
+}
+
+.content {
+    margin-top: 1cm;
+    margin-left: 5cm;
+    margin-right: 5cm;
+    margin-bottom: 1cm;
+    background-color: rgb(255, 255, 255);
+    padding: 15px;
+}

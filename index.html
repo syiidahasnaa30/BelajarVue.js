@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Aplikasi Satu Halaman Vue Js</title>
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-active body">
+  <div id="example">
+    <div class="navbar bg-info navbar-dark navbar-fixed-top  mt-0 ">
+      <a class="navbar-brand" href="#">Aplikasi Satu Halaman</a>
+
+      <form class="navbar-form mt-0" action="">
+        <div class="form-inline">
+          <span class="mr-2 ml-0 ">Sumber </span>
+          <input class="form-control mr-sm-2" type="text" id="url" v-model="url" />
+          <span class="mr-2">Cari Kata</span>
+          <input class="katakunci form-control mr-sm-2" type="text" id="katakunci" v-model="katakunci" />
+          <button class="btn btn-danger delete " @click="bersihkan">Delete</button>
+        </div>
+      </form>
+    </div>
+    <div class="content">
+      <div class="d-flex justify-content-center">
+        <h4>Pencarian dari Film "SNOWDEN"</h4>
+      </div>
+      <div class="d-flex justify-content-center">
+        <div class="total mb-2">
+          Total : {{ paginasi.total }}
+        </div>
+      </div>
+      <ol class="hasil">
+        <li v-for="(hasil,indeks) in daftarhasil" :key="indeks">
+          <span v-html="hasil.text"> </span><a :href="`${url}&t=${hasil.start}s`" target="_blank">Youtube</a>
+        </li>
+
+    </div>
+    <div class="d-flex justify-content-center">
+      <div class="halaman mb-2">
+        halaman {{ paginasi.page }}
+      </div>
+    </div>
+    <div class="d-flex justify-content-center">
+      <div class="btn-group">
+        <button type="button" class="btn btn-primary" :disabled="!paginasi.first" @click="ketikaPertamaDiKlik">
+          First
+        </button>
+        <button type="button" class="btn btn-primary" :disabled="!paginasi.prev" @click="ketikaSebelumnyaDiKlik">
+          Prev
+        </button>
+        <button type="button" class="btn btn-primary" :disabled="!paginasi.next" @click="ketikaSelanjutnyaDiKlik">
+          Next
+        </button>
+        <button type="button" class="btn btn-primary" :disabled="!paginasi.last" @click="ketikaTerakhirDiKlik">
+          Last
+        </button>
+      </div>
+    </div>
+
+    <!--<pre>{{ jadikanstring(paginasi) }}</pre>
+        <div class="mb-5">
+            <pre>{{ jadikanstring(daftarhasil) }}</pre>
+        </div>-->
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="index.js"></script>
+  <script>
+    new Vue({
+      el: "#example",
+      data: {
+        url: "https://www.youtube.com/watch?v=eWP2J7ty0sA",
+        daftarhasil: [],
+        katakunci: "",
+        paginasi: {
+          first: null,
+          last: null,
+          prev: null,
+          next: null,
+          total: 0,
+          page: null,
+        },
+      },
+      computed: {
+        jadikanstring() {
+          return (parameter) => {
+            return JSON.stringify(parameter, null, 2);
+          };
+        },
+      },
+      watch: {
+        //katakunci(kataKunci) {
+        //    console.log(kataKunci)
+        //}
+        katakunci: pDebounce(function tanganiKataKunci(katakunci) {
+          this.cari(katakunci, this.url);
+        }, 250),
+      },
+      methods: {
+        async cari(kataKunci, url, paginasi) {
+          try {
+            let urlApi = `https://cari-teks-video-api.vercel.app/api/search?q=${kataKunci}&url=${encodeURIComponent(
+                url
+              )}`;
+            if (paginasi) {
+              urlApi = paginasi;
+            }
+            const respon = await fetch(urlApi).then((_respon) => {
+              if (_respon.ok) {
+                return _respon.json();
+              } else {
+                return [];
+              }
+            });
+            this.daftarhasil = respon.data;
+            this.paginasi.first = respon.first;
+            this.paginasi.prev = respon.prev;
+            this.paginasi.next = respon.next;
+            this.paginasi.last = respon.last;
+            this.paginasi.total = respon.total;
+            this.paginasi.page = respon.page;
+            console.log(respon);
+          } catch (error) {}
+        },
+        bersihkan() {
+          this.katakunci = ''
+        },
+        ketikaPertamaDiKlik() {
+          this.cari(this.katakunci, this.url, this.paginasi.first);
+        },
+        ketikaSebelumnyaDiKlik() {
+          this.cari(this.katakunci, this.url, this.paginasi.prev);
+        },
+        ketikaSelanjutnyaDiKlik() {
+          this.cari(this.katakunci, this.url, this.paginasi.next);
+        },
+        ketikaTerakhirDiKlik() {
+          this.cari(this.katakunci, this.url, this.paginasi.last);
+        },
+      },
+    });
+  </script>
+</body>
+
+</html>
